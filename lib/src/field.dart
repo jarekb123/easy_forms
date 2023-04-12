@@ -55,7 +55,7 @@ class FieldController<Value, ValidationError> implements ValidationNode {
   final ValueNotifier<ValidationState> _validationState;
 
   /// The debug label of the field.
-  /// It is used in [toString]/[toJson] to identify the field.
+  /// It is used in [toString]/[toMap] to identify the field.
   final String? debugLabel;
 
   /// Updates the value of the field.
@@ -94,7 +94,7 @@ class FieldController<Value, ValidationError> implements ValidationNode {
 
   /// Used to dump the state of the field.
   @override
-  Map<String, String> toJson() {
+  Map<String, String> toMap() {
     return {
       'type': '$runtimeType',
       'debugLabel': debugLabel.toString(),
@@ -108,6 +108,6 @@ class FieldController<Value, ValidationError> implements ValidationNode {
   @override
   String toString() {
     const encoder = JsonEncoder.withIndent('  ');
-    return encoder.convert(toJson());
+    return encoder.convert(toMap());
   }
 }

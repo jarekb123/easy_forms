@@ -11,7 +11,7 @@ abstract class ValidationNode {
   bool validate();
 
   /// Used to dump the state of the node.
-  Map<String, dynamic> toJson();
+  Map<String, dynamic> toMap();
 }
 
 enum ValidationState {

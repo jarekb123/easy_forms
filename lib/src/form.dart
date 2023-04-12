@@ -87,19 +87,19 @@ mixin FormControllerMixin implements ValidationNode {
   }
 
   @override
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       'type': '$runtimeType',
       'debugLabel': debugLabel,
       'hash': identityHashCode(this).toString(),
       'validationState': validationState.value.toString(),
-      'fields': fields.map((field) => field.toJson()).toList(),
+      'fields': fields.map((field) => field.toMap()).toList(),
     };
   }
 
   @override
   String toString() {
     const encoder = JsonEncoder.withIndent('  ');
-    return encoder.convert(toJson());
+    return encoder.convert(toMap());
   }
 }
