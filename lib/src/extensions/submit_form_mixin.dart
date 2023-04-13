@@ -37,7 +37,7 @@ import 'package:flutter/foundation.dart';
 ///   }
 /// }
 /// ```
-mixin SubmitFormMixin<Result> {
+mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
   /// Performs actual submit logic, eg. sending data to the server.
   @protected
   Future<Result> performSubmit();
@@ -58,7 +58,7 @@ mixin SubmitFormMixin<Result> {
   void onSubmitError(Object error, StackTrace stackTrace);
 
   /// The form that is being submitted.
-  FormControllerMixin get form;
+  Form get form;
 
   /// If false, submit will be performed only if form is not already submitting.
   bool get concurrentSubmit => false;

@@ -35,7 +35,7 @@ class RequiredNullableFieldController<Value, ValidationError>
   /// Throws [StateError] if the field's value is null or invalid.
   Value get requiredValue {
     final value = this.value.value;
-    final validationState = this.validationState.value;
+    final validationState = this.value.value;
 
     if (value != null) {
       return value;

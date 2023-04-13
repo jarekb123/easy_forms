@@ -13,13 +13,14 @@ void main() {
     });
 
     test('initially checks validation state', () {
-      expect(form.validationState.value, ValidationState.dirty);
+      expectValidationState(form.value, ValidationState.dirty);
     });
 
     test('update of any field value changes form validation state to dirty',
         () {
+      form.validate();
       form.field1.updateValue('not empty');
-      expect(form.validationState.value, ValidationState.dirty);
+      expectValidationState(form.value, ValidationState.dirty);
     });
 
     test('test validate() side effects', () {
@@ -27,16 +28,16 @@ void main() {
       // field2 is valid initially
 
       expect(form.validate(), isTrue);
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.valid,
         reason:
             'validation state should be valid after validate() on valid form',
       );
 
       form.field1.updateValue('changed');
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.dirty,
         reason:
             'validation state should be dirty after updateValue() on any field',
@@ -44,8 +45,8 @@ void main() {
 
       form.field2.updateValue(''); // empty field2 - invalid value
       expect(form.validate(), isFalse);
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.invalid,
         reason:
             'validation state should be invalid after validate() on invalid form',
@@ -62,13 +63,13 @@ void main() {
       setUp(() {
         form = _AutovalidatedForm();
         validationStateListener = MockListener<ValidationState>();
-        form.validationState.addListener(
-          () => validationStateListener(form.validationState.value),
+        form.addListener(
+          () => validationStateListener(form.value.validationState),
         );
       });
 
       test('initially checks validation state', () {
-        expect(form.validationState.value, ValidationState.valid);
+        expectValidationState(form.value, ValidationState.valid);
         verifyZeroInteractions(validationStateListener);
       });
 
@@ -76,12 +77,12 @@ void main() {
         'update of any field value changes validates the form validation',
         () {
           form.field1.updateValue('not');
-          expect(form.validationState.value, ValidationState.valid);
+          expectValidationState(form.value, ValidationState.valid);
           // initial validation state is not changed
           verifyNever(() => validationStateListener(ValidationState.valid));
 
           form.field1.updateValue('');
-          expect(form.validationState.value, ValidationState.invalid);
+          expectValidationState(form.value, ValidationState.invalid);
 
           verify(
             () => validationStateListener(ValidationState.invalid),
@@ -94,24 +95,24 @@ void main() {
         form.field1.updateValue('not empty');
         // field2 is valid initially
 
-        expect(
-          form.validationState.value,
+        expectValidationState(
+          form.value,
           ValidationState.valid,
           reason: 'validation state should be valid on valid form',
         );
 
         form.field1.updateValue('changed');
         form.field2.updateValue('changed');
-        expect(
-          form.validationState.value,
+        expectValidationState(
+          form.value,
           isNot(ValidationState.dirty),
           reason: 'validation state should not be dirty after updateValue()'
               'on form with autovalidated fields',
         );
 
         form.field2.updateValue(''); // empty field2 - invalid value
-        expect(
-          form.validationState.value,
+        expectValidationState(
+          form.value,
           ValidationState.invalid,
           reason:
               'validation state should be invalid after validate() on invalid form',
@@ -128,7 +129,7 @@ void main() {
     });
 
     test('initially checks validation state', () {
-      expect(form.validationState.value, ValidationState.dirty);
+      expectValidationState(form.value, ValidationState.dirty);
     });
 
     test(
@@ -136,32 +137,32 @@ void main() {
       'changes form validation state to dirty',
       () {
         form.validate();
-        expect(form.validationState.value, isNot(ValidationState.dirty));
+        expectValidationState(form.value, isNot(ValidationState.dirty));
 
         form.subform.field1.updateValue('not empty');
-        expect(form.validationState.value, ValidationState.dirty);
+        expectValidationState(form.value, ValidationState.dirty);
       },
     );
 
     test('test validate() side effects', () {
       form.subform.field1.updateValue('not empty');
 
-      expect(
-        form.autovalidatedSubform.validationState.value,
+      expectValidationState(
+        form.autovalidatedSubform.value,
         ValidationState.valid,
         reason: 'autovalidated subform should be valid',
       );
       expect(form.validate(), isTrue);
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.valid,
         reason:
             'validation state should be valid after validate() on valid form',
       );
 
       form.subform.field1.updateValue('changed');
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.dirty,
         reason:
             'validation state should be dirty after updateValue() on any field',
@@ -169,8 +170,8 @@ void main() {
 
       form.subform.field2.updateValue(''); // empty field2 - invalid value
       expect(form.validate(), isFalse);
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.invalid,
         reason:
             'validation state should be invalid after validate() on invalid form',
@@ -178,8 +179,8 @@ void main() {
 
       form.subform.field2.updateValue('changed');
       expect(form.validate(), isTrue);
-      expect(
-        form.validationState.value,
+      expectValidationState(
+        form.value,
         ValidationState.valid,
         reason:
             'validation state should be valid after validate() on valid form',

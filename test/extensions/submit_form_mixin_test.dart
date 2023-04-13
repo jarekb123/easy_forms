@@ -9,21 +9,21 @@ import '../test_helpers.dart';
 void main() {
   registerFallbackValue(_SubmitFormStateInitial());
 
-  late _TestSubmitFormMixin form;
+  late _TestSubmitFormMixin submitForm;
   late MockListener<_SubmitFormState> stateListener;
   late MockFuture<String> submitAction;
 
   setUp(() {
     submitAction = MockFuture<String>();
     stateListener = MockListener<_SubmitFormState>();
-    form = _TestSubmitFormMixin(submitAction);
-    form.addListener(() => stateListener(form.value));
+    submitForm = _TestSubmitFormMixin(submitAction);
+    submitForm.addListener(() => stateListener(submitForm.value));
   });
 
   test('does not perform submit if form is invalid', () {
-    form.field.updateValue('');
-    form.submit();
-    expect(form.value, isA<_SubmitFormStateInitial>());
+    submitForm.form.field.updateValue('');
+    submitForm.submit();
+    expect(submitForm.value, isA<_SubmitFormStateInitial>());
     verifyNever(() => submitAction());
     verifyNever(() => stateListener(any()));
   });
@@ -32,11 +32,11 @@ void main() {
     final submit = Completer<String>();
     when(() => submitAction()).thenAnswer((_) => submit.future);
 
-    form.field.updateValue('not empty');
+    submitForm.form.field.updateValue('not empty');
     await Future.wait(
       [
-        form.submit(),
-        form.submit(),
+        submitForm.submit(),
+        submitForm.submit(),
         Future(() => submit.complete('result')),
       ],
     );
@@ -48,9 +48,9 @@ void main() {
       () async {
     when(() => submitAction()).thenAnswer((_) async => 'result');
 
-    form.field.updateValue('not empty');
-    await form.submit();
-    expect(form.value, isA<_SubmitFormStateSuccess>());
+    submitForm.form.field.updateValue('not empty');
+    await submitForm.submit();
+    expect(submitForm.value, isA<_SubmitFormStateSuccess>());
 
     verifyInOrder([
       () => stateListener(any(that: isA<_SubmitFormStateSubmitting>())),
@@ -72,9 +72,9 @@ void main() {
       (_) async => throw 'error',
     );
 
-    form.field.updateValue('not empty');
-    await form.submit();
-    expect(form.value, isA<_SubmitFormStateError>());
+    submitForm.form.field.updateValue('not empty');
+    await submitForm.submit();
+    expect(submitForm.value, isA<_SubmitFormStateError>());
 
     verifyInOrder([
       () => stateListener(any(that: isA<_SubmitFormStateSubmitting>())),
@@ -121,18 +121,10 @@ class _SubmitFormStateSuccess extends _SubmitFormState {
 }
 
 class _TestSubmitFormMixin extends ValueNotifier<_SubmitFormState>
-    with FormControllerMixin, SubmitFormMixin<String> {
+    with SubmitFormMixin<_TestForm, String> {
   _TestSubmitFormMixin(this._submitAction) : super(_SubmitFormStateInitial());
 
-  final field = FieldController<String, String>(
-    initialValue: '',
-    validator: (value) => value.isEmpty ? 'empty' : null,
-  );
-
   final Future<String> Function() _submitAction;
-
-  @override
-  List<ValidationNode> get fields => [field];
 
   @override
   void onSubmitError(Object error, StackTrace stackTrace) {
@@ -156,5 +148,15 @@ class _TestSubmitFormMixin extends ValueNotifier<_SubmitFormState>
   Future<String> performSubmit() => _submitAction();
 
   @override
-  FormControllerMixin get form => this;
+  final form = _TestForm();
+}
+
+class _TestForm with FormControllerMixin {
+  final field = FieldController<String, String>(
+    initialValue: '',
+    validator: (value) => value.isEmpty ? 'empty' : null,
+  );
+
+  @override
+  List<ValidationNode> get fields => [field];
 }

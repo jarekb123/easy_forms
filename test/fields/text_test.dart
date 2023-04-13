@@ -1,17 +1,19 @@
 import 'package:easy_forms/easy_forms.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../test_helpers.dart';
+
 enum _TextFieldValidationError { tooShort, tooLong }
 
 void main() {
   group(
     'TextFieldController',
     () {
-      late TextFieldController<_TextFieldValidationError> controller;
+      late TextFieldController<_TextFieldValidationError> field;
 
       setUp(
         () {
-          controller = TextFieldController<_TextFieldValidationError>(
+          field = TextFieldController<_TextFieldValidationError>(
             initialValue: 'a',
             validator: (value) {
               if (value.length < 3) {
@@ -29,38 +31,41 @@ void main() {
       test(
         'should have the initial value',
         () {
-          expect(controller.value.value, 'a');
+          expect(field.value.value, 'a');
         },
       );
 
       test(
         'should update the value',
         () {
-          controller.updateValue('abc');
-          expect(controller.value.value, 'abc');
+          field.updateValue('abc');
+          expect(field.value.value, 'abc');
         },
       );
 
       test(
         'should validate the value',
         () {
-          controller
+          field
             ..updateValue('ab')
             ..validate();
-          expect(controller.error.value, _TextFieldValidationError.tooShort);
-          expect(controller.validationState.value, ValidationState.invalid);
+          expectValidationError(
+            field.value,
+            _TextFieldValidationError.tooShort,
+          );
+          expectValidationState(field.value, ValidationState.invalid);
 
-          controller
+          field
             ..updateValue('abcdef')
             ..validate();
-          expect(controller.error.value, _TextFieldValidationError.tooLong);
-          expect(controller.validationState.value, ValidationState.invalid);
+          expectValidationError(field.value, _TextFieldValidationError.tooLong);
+          expectValidationState(field.value, ValidationState.invalid);
 
-          controller
+          field
             ..updateValue('abc')
             ..validate();
-          expect(controller.error.value, null);
-          expect(controller.validationState.value, ValidationState.valid);
+          expectValidationError(field.value, isNull);
+          expectValidationState(field.value, ValidationState.valid);
         },
       );
     },

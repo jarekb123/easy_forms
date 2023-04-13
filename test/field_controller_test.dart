@@ -5,10 +5,18 @@ import 'test_helpers.dart';
 
 enum _FieldValidationError { empty, tooLong }
 
+typedef _TestFieldState = FieldControllerState<String, _FieldValidationError>;
+
 void main() {
-  late MockListener<_FieldValidationError?> errorListener;
-  late MockListener<String> valueListener;
-  late MockListener<ValidationState> validationStateListener;
+  registerFallbackValue(
+    const _TestFieldState(
+      value: '',
+      error: null,
+      validationState: ValidationState.dirty,
+    ),
+  );
+  late MockListener<FieldControllerState<String, _FieldValidationError>>
+      stateListener;
 
   FieldController<String, _FieldValidationError> createField({
     required String initialValue,
@@ -30,9 +38,7 @@ void main() {
   }
 
   setUp(() {
-    errorListener = MockListener<_FieldValidationError?>();
-    valueListener = MockListener<String>();
-    validationStateListener = MockListener<ValidationState>();
+    stateListener = MockListener();
   });
 
   group('non autovalidated field', () {
@@ -40,70 +46,98 @@ void main() {
 
     setUp(() {
       field = createField(initialValue: '');
-      field.error.addListener(() => errorListener(field.error.value));
-      field.value.addListener(() => valueListener(field.value.value));
-      field.validationState.addListener(
-        () => validationStateListener(field.validationState.value),
+      field.addListener(
+        () => stateListener(field.value),
       );
     });
 
     test('is not validated immediately', () {
-      expect(field.error.value, isNull);
-      expect(field.validationState.value, ValidationState.dirty);
-      verifyZeroInteractions(errorListener);
-      verifyZeroInteractions(validationStateListener);
+      expect(
+        field.value,
+        const _TestFieldState(
+          value: '',
+          error: null,
+          validationState: ValidationState.dirty,
+        ),
+      );
+      verifyZeroInteractions(stateListener);
     });
 
     test('is not validated when value is updated', () {
       field.updateValue('123456');
 
-      expect(field.value.value, '123456');
-      verify(() => valueListener('123456')).called(1);
-      expect(field.error.value, isNull);
-      expect(field.validationState.value, ValidationState.dirty);
-      verifyZeroInteractions(errorListener);
-      verifyZeroInteractions(validationStateListener);
+      const expectedState = _TestFieldState(
+        value: '123456',
+        error: null,
+        validationState: ValidationState.dirty,
+      );
+      expect(field.value, expectedState);
+      verify(() => stateListener(expectedState)).called(1);
+      verifyNoMoreInteractions(stateListener);
     });
 
     test('is validated when validate is called', () {
       // validates initial value
       expect(field.validate(), isFalse);
-      expect(field.error.value, _FieldValidationError.empty);
-      verify(() => errorListener(_FieldValidationError.empty)).called(1);
-      expect(field.validationState.value, ValidationState.invalid);
-      verify(() => validationStateListener(ValidationState.invalid)).called(1);
+      const expectedFirstState = _TestFieldState(
+        value: '',
+        error: _FieldValidationError.empty,
+        validationState: ValidationState.invalid,
+      );
+      expect(field.value, expectedFirstState);
+      verify(() => stateListener(expectedFirstState)).called(1);
 
       field.updateValue('123456');
-      verify(() => errorListener(null)).called(1);
-      expect(
-        field.error.value,
-        isNull,
-        reason: 'error is cleared when value is updated',
+      const expectedSecondState = _TestFieldState(
+        value: '123456',
+        error: null, // error is cleared when value is updated
+        validationState: ValidationState.dirty,
       );
-      expect(field.validationState.value, ValidationState.dirty);
-      verify(() => validationStateListener(ValidationState.dirty)).called(1);
+      expect(
+        field.value,
+        expectedSecondState,
+        reason: 'value is updated and error is cleared when value is updated',
+      );
+      verify(() => stateListener(expectedSecondState)).called(1);
 
       expect(field.validate(), isFalse);
-      expect(field.error.value, _FieldValidationError.tooLong);
-      verify(() => errorListener(_FieldValidationError.tooLong)).called(1);
-      expect(field.validationState.value, ValidationState.invalid);
-      verify(() => validationStateListener(ValidationState.invalid)).called(1);
+      const expectedThirdState = _TestFieldState(
+        value: '123456',
+        error: _FieldValidationError.tooLong,
+        validationState: ValidationState.invalid,
+      );
+      expect(field.value, expectedThirdState);
+      verify(() => stateListener(expectedThirdState)).called(1);
 
-      verifyNoMoreInteractions(errorListener);
-      verifyNoMoreInteractions(validationStateListener);
+      verifyNoMoreInteractions(stateListener);
     });
 
     test('overrideValidationError overrides error', () {
       // validates initial value
       expect(field.validate(), isFalse);
-      expect(field.validationState.value, ValidationState.invalid);
+      verify(
+        () => stateListener(
+          any(that: hasValidationState(ValidationState.invalid)),
+        ),
+      ).called(1);
+
+      expectValidationState(field.value, ValidationState.invalid);
 
       field.overrideValidationError(_FieldValidationError.tooLong);
 
-      expect(field.error.value, _FieldValidationError.tooLong);
-      verify(() => errorListener(_FieldValidationError.tooLong)).called(1);
-      expect(field.validationState.value, ValidationState.invalid);
-      verify(() => validationStateListener(ValidationState.invalid)).called(1);
+      expectValidationError(field.value, _FieldValidationError.tooLong);
+      verify(
+        () => stateListener(
+          any(
+            that: allOf(
+              hasValidationError(_FieldValidationError.tooLong),
+              hasValidationState(ValidationState.invalid),
+            ),
+          ),
+        ),
+      ).called(1);
+
+      verifyNoMoreInteractions(stateListener);
     });
   });
 
@@ -112,57 +146,82 @@ void main() {
 
     setUp(() {
       field = createField(initialValue: '', autoValidate: true);
-      field.error.addListener(() => errorListener(field.error.value));
-      field.value.addListener(() => valueListener(field.value.value));
-      field.validationState.addListener(
-        () => validationStateListener(field.validationState.value),
+      field.addListener(
+        () => stateListener(field.value),
       );
     });
 
     test('initial value is validated on create', () {
-      expect(field.error.value, _FieldValidationError.empty);
-      expect(field.validationState.value, ValidationState.invalid);
+      expect(
+        field.value,
+        allOf(
+          hasValidationError(_FieldValidationError.empty),
+          hasValidationState(ValidationState.invalid),
+        ),
+      );
     });
 
     test('is validated on every value change', () {
       field.updateValue('123456');
-      expect(field.error.value, _FieldValidationError.tooLong);
-      verify(() => errorListener(_FieldValidationError.tooLong)).called(1);
-      expect(field.value.value, '123456');
-      verify(() => valueListener('123456')).called(1);
-      expect(field.validationState.value, ValidationState.invalid);
-      // initial state is: invalid, so validation state is not changed
-      verifyNever(() => validationStateListener(ValidationState.invalid));
+      verify(
+        () => stateListener(
+          const _TestFieldState(
+            value: '123456',
+            error: _FieldValidationError.tooLong,
+            validationState: ValidationState.invalid,
+          ),
+        ),
+      ).called(1);
+      verifyNoMoreInteractions(stateListener);
 
       field.updateValue('12345');
-      expect(field.error.value, isNull);
-      verify(() => errorListener(null)).called(1);
-      expect(field.value.value, '12345');
-      verify(() => valueListener('12345')).called(1);
-      verify(() => validationStateListener(ValidationState.valid)).called(1);
+      verify(
+        () => stateListener(
+          const _TestFieldState(
+            value: '12345',
+            error: null,
+            validationState: ValidationState.valid,
+          ),
+        ),
+      ).called(1);
+      verifyNoMoreInteractions(stateListener);
 
       field.updateValue('');
-      expect(field.error.value, _FieldValidationError.empty);
-      verify(() => errorListener(_FieldValidationError.empty)).called(1);
-      expect(field.value.value, '');
-      verify(() => valueListener('')).called(1);
-      verify(() => validationStateListener(ValidationState.invalid)).called(1);
-
-      verifyNoMoreInteractions(errorListener);
-      verifyNoMoreInteractions(valueListener);
-
-      verifyNever(() => validationStateListener(ValidationState.dirty));
-      verifyNoMoreInteractions(validationStateListener);
+      verify(
+        () => stateListener(
+          const _TestFieldState(
+            value: '',
+            error: _FieldValidationError.empty,
+            validationState: ValidationState.invalid,
+          ),
+        ),
+      ).called(1);
+      verifyNoMoreInteractions(stateListener);
     });
 
     test('overrideValidationError overrides error', () {
-      expect(field.validationState.value, ValidationState.invalid);
-      expect(field.error.value, _FieldValidationError.empty);
+      expect(
+        field.value,
+        allOf(
+          hasValidationError(_FieldValidationError.empty),
+          hasValidationState(ValidationState.invalid),
+        ),
+      );
 
       field.overrideValidationError(_FieldValidationError.tooLong);
 
-      expect(field.error.value, _FieldValidationError.tooLong);
-      verify(() => errorListener(_FieldValidationError.tooLong)).called(1);
+      expectValidationError(field.value, _FieldValidationError.tooLong);
+      verify(
+        () => stateListener(
+          any(
+            that: allOf(
+              hasValidationError(_FieldValidationError.tooLong),
+              hasValidationState(ValidationState.invalid),
+            ),
+          ),
+        ),
+      ).called(1);
+      verifyNoMoreInteractions(stateListener);
     });
   });
 }

@@ -1,5 +1,5 @@
 name: easy_forms
-description: A new Flutter project.
+description: A Dart library that provides a mixin for form validation logic, allowing for easy validation of form data and management of form field validation state.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.0.1+1
 
