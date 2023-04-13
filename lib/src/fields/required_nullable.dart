@@ -33,6 +33,7 @@ class RequiredNullableFieldController<Value, ValidationError>
 
   /// Returns validated non-null value of the field.
   /// Throws [StateError] if the field's value is null or invalid.
+  // TODO(jarekb123): Consider moving this to extension method and remove this class.
   Value get requiredValue {
     final value = this.value.value;
     final validationState = this.value.value;
