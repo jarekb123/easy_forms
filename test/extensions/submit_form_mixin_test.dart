@@ -158,5 +158,5 @@ class _TestForm with FormControllerMixin {
   );
 
   @override
-  List<ValidationNode> get fields => [field];
+  List<FormPart> get fields => [field];
 }

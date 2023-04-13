@@ -14,11 +14,11 @@ import 'package:easy_forms/easy_forms.dart';
 /// {@endtemplate}
 ///
 /// {@macro formcontroller.fields}
-mixin FormControllerMixin implements ValidationNode<FormControllerState> {
+mixin FormControllerMixin implements FormPart<FormControllerState> {
   /// The fields of the form.
   ///
   /// {@template formcontroller.fields}
-  /// The fields can be grouped in subform with using another [FormController].
+  /// The fields can be grouped in subform with using another [FormControllerMixin].
   /// This will make the form more modular and reusable.
   ///
   /// Example:
@@ -26,17 +26,17 @@ mixin FormControllerMixin implements ValidationNode<FormControllerState> {
   /// class UserIdentityFormController with FormControllerMixin {
   ///   final email = EmailFieldController();
   ///   final password = PasswordFieldController();
-  ///   List<ValidationNode> get fields => [email, password];
+  ///   List<FormPart> get fields => [email, password];
   /// }
   /// class RegisterFormController with FormControllerMixin {
   ///   final userIdentity = UserIdentityFormController();
   ///   final firstName = TextFieldController();
   ///   final lastName = TextFieldController();
-  ///   List<ValidationNode> get fields => [userIdentity, firstName, lastName];
+  ///   List<FormPart> get fields => [userIdentity, firstName, lastName];
   /// }
   /// ```
   /// {@endtemplate}
-  List<ValidationNode> get fields;
+  List<FormPart> get fields;
 
   String? get debugLabel => null;
 
@@ -125,7 +125,7 @@ mixin FormControllerMixin implements ValidationNode<FormControllerState> {
   }
 }
 
-class FormControllerState implements ValidationNodeState {
+class FormControllerState implements FormPartState {
   const FormControllerState({
     required this.validationState,
   });

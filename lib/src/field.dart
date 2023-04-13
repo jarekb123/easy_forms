@@ -11,7 +11,7 @@ typedef FieldValidator<Value, ValidationError> = ValidationError? Function(
 
 /// [FieldController] is a controller for a field in a form.
 class FieldController<Value, ValidationError>
-    implements ValidationNode<FieldControllerState<Value, ValidationError>> {
+    implements FormPart<FieldControllerState<Value, ValidationError>> {
   /// Creates a [FieldController].
   ///
   /// If [autoValidate] is set to true, the field will be validated on every its value change, so:
@@ -136,8 +136,7 @@ class FieldController<Value, ValidationError>
 /// The state of the field.
 /// It contains the current value, error and validation state.
 /// {@endtemplate}
-class FieldControllerState<Value, ValidationError>
-    implements ValidationNodeState {
+class FieldControllerState<Value, ValidationError> implements FormPartState {
   /// {@macro field_controller_state}
   const FieldControllerState({
     required this.value,

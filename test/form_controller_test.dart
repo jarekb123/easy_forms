@@ -218,7 +218,7 @@ class _FlatForm with FormControllerMixin {
       _TestFieldController(initialValue: 'not empty');
 
   @override
-  List<ValidationNode> get fields => [field1, field2];
+  List<FormPart> get fields => [field1, field2];
 }
 
 class _AutovalidatedForm with FormControllerMixin {
@@ -236,7 +236,7 @@ class _AutovalidatedForm with FormControllerMixin {
   );
 
   @override
-  List<ValidationNode> get fields => [field1, field2];
+  List<FormPart> get fields => [field1, field2];
 }
 
 class _NestedForm with FormControllerMixin {
@@ -244,5 +244,5 @@ class _NestedForm with FormControllerMixin {
   final autovalidatedSubform = _AutovalidatedForm();
 
   @override
-  List<ValidationNode> get fields => [subform, autovalidatedSubform];
+  List<FormPart> get fields => [subform, autovalidatedSubform];
 }

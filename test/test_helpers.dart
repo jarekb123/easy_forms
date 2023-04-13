@@ -21,7 +21,7 @@ void expectValidationError<T extends FieldControllerState>(
 }) =>
     expect(state, hasValidationError(error), reason: reason);
 
-void expectValidationState<T extends ValidationNodeState>(
+void expectValidationState<T extends FormPartState>(
   T state,
   dynamic matcher, {
   String? reason,
@@ -44,7 +44,7 @@ Matcher hasValidationError<T extends FieldControllerState>(
   );
 }
 
-Matcher hasValidationState<T extends ValidationNodeState>(
+Matcher hasValidationState<T extends FormPartState>(
   ValidationState validationState,
 ) {
   return predicate<T>(

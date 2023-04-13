@@ -1,11 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-/// Validation node represents a part of the form that can be validated.
+/// [FormPart] represents a part of the form that can be validated.
 /// It can be a field, a group of fields, or a whole form.
 ///
 /// Listenable [value] contains the current validation state of the node.
-abstract class ValidationNode<T extends ValidationNodeState>
-    implements ValueListenable<T> {
+abstract class FormPart<T extends FormPartState> implements ValueListenable<T> {
   /// Validates the node.
   ///
   /// Returns true if the node is valid, false otherwise.
@@ -15,7 +14,7 @@ abstract class ValidationNode<T extends ValidationNodeState>
   Map<String, dynamic> toMap();
 }
 
-abstract class ValidationNodeState {
+abstract class FormPartState {
   ValidationState get validationState;
 }
 
