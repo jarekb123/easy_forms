@@ -142,4 +142,9 @@ class FormControllerState implements FormPartState {
 
   @override
   int get hashCode => validationState.hashCode;
+
+  @override
+  String toString() {
+    return 'FormControllerState(validationState: $validationState)';
+  }
 }
