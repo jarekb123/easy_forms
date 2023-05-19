@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 /// Mixin that adds submit logic.
 ///
 /// To use this mixin, override [form]
-/// and implement [performSubmit], [onSubmitting], [onSubmitSuccess] and [onSubmitError].
+/// and implement [performSubmit], [onSubmitting], [onSubmitted] and [onSubmitError].
 /// Optionally, override [concurrentSubmit] to allow concurrent submits.
 ///
 /// It can be easily used with any state management solution, eg. Riverpod, BLoC, etc.
@@ -47,10 +47,10 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
   /// Can be used to show loading indicator, disable submit button, etc.
   void onSubmitting();
 
-  /// Called when submit is successful.
+  /// Called when submit is submitted (eg. data is sent to backend).
   ///
   /// Can be used to hide loading indicator, show success message, etc.
-  void onSubmitSuccess(Result result);
+  void onSubmitted(Result result);
 
   /// Called when submit fails.
   ///
@@ -76,7 +76,7 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
         _submitting = true;
         final result = await performSubmit();
         _submitting = false;
-        onSubmitSuccess(result);
+        onSubmitted(result);
       }
     } catch (error, stackTrace) {
       onSubmitError(error, stackTrace);

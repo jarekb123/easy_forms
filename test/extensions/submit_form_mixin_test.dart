@@ -135,7 +135,7 @@ class _TestSubmitFormMixin extends ValueNotifier<_SubmitFormState>
   }
 
   @override
-  void onSubmitSuccess(String result) {
+  void onSubmitted(String result) {
     value = _SubmitFormStateSuccess(result);
   }
 

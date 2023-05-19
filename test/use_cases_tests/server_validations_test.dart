@@ -67,7 +67,7 @@ class _RegisterForm
   }
 
   @override
-  void onSubmitSuccess(_RegisterResult result) {
+  void onSubmitted(_RegisterResult result) {
     if (result == _RegisterResult.emailAlreadyUsed) {
       email.overrideValidationError(_EmailValidationError.alreadyUsed);
       submitState.value = _RegisterSubmitResult.error;
