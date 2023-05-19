@@ -1,40 +1,16 @@
 import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms/src/extensions/form_value_mixin.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../test_forms/login_form.dart';
 import 'login_form_test_helpers.dart';
-
-enum EmailValidationError { invalidFormat, alreadyUsed }
-
-enum PasswordValidationError { tooShort }
-
-class LoginForm with FormControllerMixin {
-  final email = TextFieldController(
-    initialValue: '',
-    validator: (value, _) {
-      if (value.isEmpty || !value.contains('@')) {
-        return EmailValidationError.invalidFormat;
-      }
-      return null;
-    },
-  );
-  final password = TextFieldController(
-    initialValue: '',
-    validator: (value, _) {
-      if (value.length < 6) {
-        return PasswordValidationError.tooShort;
-      }
-      return null;
-    },
-  );
-
-  @override
-  List<FormPart<FormPartState>> get fields => [email, password];
-}
 
 enum SubmitLoginFormState { initial, loading, success, error }
 
 class SubmitLoginFormNotifier extends ValueNotifier<SubmitLoginFormState>
-    with SubmitFormMixin<LoginForm, LoginResult> {
+    with
+        SubmitFormMixin<LoginForm, LoginResult>,
+        FormValueMixin<LoginForm, LoginRequest> {
   SubmitLoginFormNotifier(
     this._loginService,
   ) : super(SubmitLoginFormState.initial);
@@ -65,10 +41,15 @@ class SubmitLoginFormNotifier extends ValueNotifier<SubmitLoginFormState>
   }
 
   @override
-  Future<LoginResult> performSubmit() {
-    return _loginService.login(
+  LoginRequest mapToValidatedValue() {
+    return LoginRequest(
       form.email.fieldValue,
       form.password.fieldValue,
     );
+  }
+
+  @override
+  Future<LoginResult> performSubmit() {
+    return _loginService.login(getValidatedValue());
   }
 }
