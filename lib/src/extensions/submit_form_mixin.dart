@@ -1,4 +1,5 @@
 import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms/src/extensions/form_extension.dart';
 import 'package:flutter/foundation.dart';
 
 /// Mixin that adds submit logic.
@@ -40,7 +41,8 @@ import 'package:flutter/foundation.dart';
 ///   }
 /// }
 /// ```
-mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
+mixin SubmitFormMixin<Form extends FormControllerMixin, Result>
+    implements FormExtension<Form> {
   /// Performs actual submit logic, eg. sending data to the server.
   ///
   /// It is called only if form is valid on the app side.
@@ -61,11 +63,6 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
   ///
   /// Can be used to hide loading indicator, show error message, etc.
   void onSubmitError(Object error, StackTrace stackTrace);
-
-  /// The form that is being submitted.
-  ///
-  /// IMPORTANT: This field should be `final` to make sure that form reference is not changed
-  Form get form;
 
   /// If false, submit will be performed only if form is not already submitting.
   bool get concurrentSubmit => false;
