@@ -43,7 +43,7 @@ class _TextFieldBuilderState<ValidationError>
   @override
   void initState() {
     super.initState();
-    _controller = widget.controller == null
+    _controller = widget.controller != null
         ? widget.controller!
         : TextEditingController(text: widget.field.value.value);
     _effectiveController.addListener(_onFieldStateChanged);
@@ -58,7 +58,7 @@ class _TextFieldBuilderState<ValidationError>
 
   void _onFieldStateChanged() {
     if (_effectiveController.text != widget.field.fieldValue) {
-      _effectiveController.text = widget.field.fieldValue;
+      widget.field.updateValue(_effectiveController.text);
     }
   }
 
@@ -66,8 +66,9 @@ class _TextFieldBuilderState<ValidationError>
   Widget build(BuildContext context) {
     return FormPartBuilder<FieldControllerState<String, ValidationError>>(
       node: widget.field,
-      builder: (context, state, child) =>
-          widget.builder(context, _effectiveController, state),
+      builder: (context, state, child) {
+        return widget.builder(context, _effectiveController, state);
+      },
     );
   }
 }

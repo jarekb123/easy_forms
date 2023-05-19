@@ -6,3 +6,6 @@ export 'src/extensions/form_value_mixin.dart';
 export 'src/fields/required_nullable.dart';
 export 'src/fields/select.dart';
 export 'src/fields/text.dart';
+export 'src/widgets/field_builder.dart';
+export 'src/widgets/form_part_builder.dart';
+export 'src/widgets/fields/text_field_builder.dart';

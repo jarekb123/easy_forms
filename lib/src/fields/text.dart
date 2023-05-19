@@ -5,5 +5,6 @@ class TextFieldController<ValidationError>
   TextFieldController({
     super.initialValue = '',
     super.validator,
+    super.debugLabel,
   });
 }
