@@ -126,7 +126,7 @@ class FieldController<Value, ValidationError>
 
   /// Overrides the validation state of the field.
   ///
-  /// It is useful when the local validation of the field is not enough,
+  /// It is useful when the app-side validation of the field is not enough,
   /// eg. some validation is performed on the server.
   void overrideValidationError(ValidationError error) {
     _value.value = FieldControllerState(

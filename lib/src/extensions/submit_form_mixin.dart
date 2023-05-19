@@ -17,6 +17,9 @@ import 'package:flutter/foundation.dart';
 ///   MyFormCubit() : super(MyFormState.initial);
 ///
 ///   @override
+///   final form = MyForm();
+///
+///   @override
 ///   Future<String> performSubmit() async {
 ///     // perform submit logic
 ///   }
@@ -51,7 +54,7 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
 
   /// Called when submit is submitted (eg. data is sent to backend).
   ///
-  /// Can be used to hide loading indicator, show success message, etc.
+  /// Can be used to hide loading indicator, show success message, consume server validations, etc.
   void onSubmitted(Result result);
 
   /// Called when submit fails.

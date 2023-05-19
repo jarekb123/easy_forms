@@ -9,6 +9,7 @@ class ConsentsForm with FormControllerMixin {
       if (value == false) {
         return 'Terms and conditions must be accepted';
       }
+      return null;
     },
   );
   final marketingConsent = BoolFieldController();

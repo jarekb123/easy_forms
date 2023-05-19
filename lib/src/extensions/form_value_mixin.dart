@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 mixin FormValueMixin<Form extends FormControllerMixin, T> {
   Form get form;
 
+  /// Maps form fields values to a validated value representated as single object.
   @protected
   T mapToValidatedValue();
 
