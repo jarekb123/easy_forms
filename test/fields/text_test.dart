@@ -15,7 +15,7 @@ void main() {
         () {
           field = TextFieldController<_TextFieldValidationError>(
             initialValue: 'a',
-            validator: (value) {
+            validator: (value, _) {
               if (value.length < 3) {
                 return _TextFieldValidationError.tooShort;
               }

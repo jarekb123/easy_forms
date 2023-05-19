@@ -199,7 +199,7 @@ void main() {
   });
 }
 
-String? _validate(String value) {
+String? _validate(String value, FieldRef ref) {
   if (value.isEmpty) {
     return 'This field is required';
   }

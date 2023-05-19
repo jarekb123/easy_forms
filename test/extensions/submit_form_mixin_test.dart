@@ -154,7 +154,7 @@ class _TestSubmitFormMixin extends ValueNotifier<_SubmitFormState>
 class _TestForm with FormControllerMixin {
   final field = FieldController<String, String>(
     initialValue: '',
-    validator: (value) => value.isEmpty ? 'empty' : null,
+    validator: (value, _) => value.isEmpty ? 'empty' : null,
   );
 
   @override

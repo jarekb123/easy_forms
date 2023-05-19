@@ -16,10 +16,10 @@ class MockFuture<T> extends Mock implements _Future<T> {}
 
 void expectValidationError<T extends FieldControllerState>(
   T state,
-  Object? error, {
+  dynamic matcher, {
   String? reason,
 }) =>
-    expect(state, hasValidationError(error), reason: reason);
+    expect(state.error, matcher, reason: reason);
 
 void expectValidationState<T extends FormPartState>(
   T state,

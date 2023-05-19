@@ -24,7 +24,7 @@ void main() {
   }) {
     return FieldController(
       initialValue: initialValue,
-      validator: (value) {
+      validator: (value, ref) {
         if (value.isEmpty) {
           return _FieldValidationError.empty;
         } else if (value.length > 5) {
@@ -224,4 +224,86 @@ void main() {
       verifyNoMoreInteractions(stateListener);
     });
   });
+
+  group(
+    'autovalidated that uses other field values',
+    () {
+      late FieldController<String, String> passwordController;
+      late FieldController<String, String> confirmPasswordController;
+
+      setUp(
+        () {
+          passwordController = FieldController<String, String>(
+            initialValue: '',
+            validator: (value, ref) {
+              if (value.isEmpty) {
+                return 'Password is required';
+              } else if (value.length < 6) {
+                return 'Password must be at least 6 characters long';
+              } else {
+                return null;
+              }
+            },
+          );
+
+          confirmPasswordController = FieldController<String, String>(
+            initialValue: '',
+            autoValidate: true,
+            validator: (value, ref) {
+              final password = ref.watch(passwordController).value;
+
+              if (value.isEmpty) {
+                return 'Confirm password is required';
+              } else if (value != password) {
+                return 'Passwords do not match';
+              } else {
+                return null;
+              }
+            },
+          );
+        },
+      );
+
+      test('change password to non matching value', () {
+        expect(
+          confirmPasswordController.value,
+          allOf(
+            hasValidationError('Confirm password is required'),
+            hasValidationState(ValidationState.invalid),
+          ),
+        );
+
+        passwordController.updateValue('123456');
+        confirmPasswordController.updateValue('123456');
+
+        expect(
+          confirmPasswordController.value,
+          allOf(
+            hasValidationError(null),
+            hasValidationState(ValidationState.valid),
+          ),
+        );
+
+        passwordController.updateValue('1234567');
+
+        expect(
+          confirmPasswordController.value,
+          allOf(
+            hasValidationError('Passwords do not match'),
+            hasValidationState(ValidationState.invalid),
+          ),
+        );
+      });
+
+      test(
+        'dispose controller removes listener on dependent field',
+        () {
+          confirmPasswordController.addListener(() {});
+          expect(passwordController.hasListeners, isTrue);
+          confirmPasswordController.dispose();
+          expect(passwordController.hasListeners, isFalse);
+        },
+      );
+    },
+  );
 }

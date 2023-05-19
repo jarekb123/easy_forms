@@ -7,6 +7,7 @@ import 'package:easy_forms/easy_forms.dart';
 
 typedef FieldValidator<Value, ValidationError> = ValidationError? Function(
   Value value,
+  FieldRef ref,
 );
 
 /// [FieldController] is a controller for a field in a form.
@@ -23,23 +24,25 @@ class FieldController<Value, ValidationError>
     required FieldValidator<Value, ValidationError> validator,
     this.debugLabel,
     this.autoValidate = false,
-  })  : _value = ValueNotifier(
-          FieldControllerState<Value, ValidationError>(
-            value: initialValue,
-            error: autoValidate ? validator(initialValue) : null,
-            validationState: autoValidate
-                ? validator(initialValue) == null
-                    ? ValidationState.valid
-                    : ValidationState.invalid
-                : ValidationState.dirty,
-          ),
-        ),
+  })  : _initialValue = initialValue,
         _validator = validator;
 
   /// {@macro field_controller_state}
   @override
   FieldControllerState<Value, ValidationError> get value => _value.value;
-  final ValueNotifier<FieldControllerState<Value, ValidationError>> _value;
+
+  late final ValueNotifier<FieldControllerState<Value, ValidationError>>
+      _value = ValueNotifier(
+    FieldControllerState<Value, ValidationError>(
+      value: _initialValue,
+      error: autoValidate ? _validator(_initialValue, _ref) : null,
+      validationState: autoValidate
+          ? _validator(_initialValue, _ref) == null
+              ? ValidationState.valid
+              : ValidationState.invalid
+          : ValidationState.dirty,
+    ),
+  );
 
   /// The value of the field.
   Value get fieldValue => value.value;
@@ -47,11 +50,17 @@ class FieldController<Value, ValidationError>
   /// Whether the field is validated on every change of its value.
   final bool autoValidate;
 
+  // ignore: invalid_use_of_protected_member
+  bool get hasListeners => _value.hasListeners;
+
   /// The validator of the field.
   /// It is called when the field is validated.
   ///
   /// It should return null if the field is valid.
   final FieldValidator<Value, ValidationError> _validator;
+
+  final Value _initialValue;
+  late final _ref = FieldRef(this, autoValidate);
 
   /// The debug label of the field.
   /// It is used in [toString]/[toMap] to identify the field.
@@ -67,12 +76,17 @@ class FieldController<Value, ValidationError>
     _value.removeListener(listener);
   }
 
+  void dispose() {
+    _ref.dispose();
+    _value.dispose();
+  }
+
   /// Updates the value of the field.
   ///
   /// If [autoValidate] is true, the field will be validated immediately.
   void updateValue(Value value) {
     if (autoValidate) {
-      final error = _validator(value);
+      final error = _validator(value, _ref);
       _value.value = FieldControllerState(
         value: value,
         error: error,
@@ -93,7 +107,7 @@ class FieldController<Value, ValidationError>
   /// Returns true if the field is valid, false otherwise.
   @override
   bool validate() {
-    final error = _validator(value.value);
+    final error = _validator(value.value, _ref);
     _value.value = FieldControllerState(
       value: value.value,
       error: error,
@@ -174,5 +188,46 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
   @override
   String toString() {
     return 'FieldControllerState(value: $value, error: $error, validationState: $validationState)';
+  }
+}
+
+/// It is used to watch the state of another field.
+/// It is useful to create fields validators that depend on other fields.
+class FieldRef {
+  final FieldController _parent;
+  final bool _autoValidate;
+
+  final _dependencies = <FieldController>[];
+
+  FieldRef(
+    this._parent,
+    this._autoValidate,
+  );
+
+  FieldControllerState<T, ValidationError> watch<T, ValidationError>(
+    FieldController<T, ValidationError> field,
+  ) {
+    if (_autoValidate) {
+      _listenToDependency(field);
+    }
+
+    return field.value;
+  }
+
+  void dispose() {
+    for (final field in _dependencies) {
+      field.removeListener(_validate);
+    }
+  }
+
+  void _listenToDependency(FieldController field) {
+    if (!_dependencies.contains(field)) {
+      _dependencies.add(field);
+      field.addListener(_validate);
+    }
+  }
+
+  void _validate() {
+    _parent.validate();
   }
 }

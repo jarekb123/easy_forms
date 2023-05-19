@@ -11,8 +11,9 @@ class RequiredNullableFieldController<Value, ValidationError>
     String? debugLabel,
     bool autoValidate = false,
   }) : super(
-          validator: (value) => _nullableFieldValidator(
+          validator: (value, ref) => _nullableFieldValidator(
             value: value,
+            ref: ref,
             validator: validator,
             nullValueError: nullValueError,
           ),
@@ -22,13 +23,14 @@ class RequiredNullableFieldController<Value, ValidationError>
 
   static ValidationError? _nullableFieldValidator<Value, ValidationError>({
     required Value? value,
+    required FieldRef ref,
     required FieldValidator<Value, ValidationError> validator,
     required ValidationError nullValueError,
   }) {
     if (value == null) {
       return nullValueError;
     }
-    return validator(value);
+    return validator(value, ref);
   }
 
   /// Returns validated non-null value of the field.
