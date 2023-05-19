@@ -39,6 +39,8 @@ import 'package:flutter/foundation.dart';
 /// ```
 mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
   /// Performs actual submit logic, eg. sending data to the server.
+  ///
+  /// It is called only if form is valid on the app side.
   @protected
   Future<Result> performSubmit();
 
