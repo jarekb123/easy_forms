@@ -21,11 +21,18 @@ class FieldController<Value, ValidationError>
   /// * when [validate] is called
   FieldController({
     required Value initialValue,
-    required FieldValidator<Value, ValidationError> validator,
+    FieldValidator<Value, ValidationError>? validator,
     this.debugLabel,
     this.autoValidate = false,
   })  : _initialValue = initialValue,
-        _validator = validator;
+        _validator = validator ?? _defaultValidator;
+
+  // Creates a validator that always returns null (field's value is always valid)
+  static ValidationError? _defaultValidator<Value, ValidationError>(
+    Value value,
+    FieldRef ref,
+  ) =>
+      null;
 
   /// {@macro field_controller_state}
   @override
