@@ -63,6 +63,8 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result> {
   void onSubmitError(Object error, StackTrace stackTrace);
 
   /// The form that is being submitted.
+  ///
+  /// IMPORTANT: This field should be `final` to make sure that form reference is not changed
   Form get form;
 
   /// If false, submit will be performed only if form is not already submitting.
