@@ -1,5 +1,4 @@
 import 'package:easy_forms/easy_forms.dart';
-import 'package:easy_forms/src/extensions/form_value_mixin.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../test_forms/login_form.dart';
