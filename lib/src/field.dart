@@ -41,6 +41,9 @@ class FieldController<Value, ValidationError>
   FieldControllerState<Value, ValidationError> get value => _value.value;
   final ValueNotifier<FieldControllerState<Value, ValidationError>> _value;
 
+  /// The value of the field.
+  Value get fieldValue => value.value;
+
   /// Whether the field is validated on every change of its value.
   final bool autoValidate;
 

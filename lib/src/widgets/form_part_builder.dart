@@ -1,11 +1,35 @@
 import 'package:easy_forms/easy_forms.dart';
 import 'package:flutter/widgets.dart';
 
+/// {@template form_part_builder}
 /// A [ValueListenableBuilder] listens to a [FormPart]'s [FormPartState].
 /// Provided [node] may be a field [FieldController] or a form [FormControllerMixin].
 ///
 /// Use this widget to build a widget that depends on the [FormPart]'s [ValidationState].
-class FormPartBuilder extends StatelessWidget {
+/// Example:
+///
+/// ```dart
+/// final formPart = FormPart<FormPartState>();
+///
+/// class SubmitButton extends StatelessWidget {
+///   Widget build(BuildContext context) {
+///     return FormPartBuilder(
+///       node: formPart,
+///       builder: (context, state, child) {
+///         final enabled = state.validationState != ValidationState.invalid;
+///         return ElevatedButton(
+///           onPressed: enabled ? () => _submitAction() : null,
+///           child: Text('Submit'),
+///         );
+///       },
+///     );
+///   }
+/// }
+/// ```
+/// {@endtemplate}
+
+class FormPartBuilder<T extends FormPartState> extends StatelessWidget {
+  /// {@macro form_part_builder}
   const FormPartBuilder({
     super.key,
     required this.node,
@@ -16,18 +40,16 @@ class FormPartBuilder extends StatelessWidget {
   /// The [FormPart] to which this [FormPartBuilder] is attached.
   ///
   /// The [FormPart] may be a field [FieldController] or a form [FormControllerMixin].
-  final FormPart node;
-  final ValueWidgetBuilder<ValidationState> builder;
+  final FormPart<T> node;
+  final ValueWidgetBuilder<T> builder;
   final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<FormPartState>(
+    return ValueListenableBuilder<T>(
       valueListenable: node,
+      builder: builder,
       child: child,
-      builder: (context, nodeState, child) {
-        return builder(context, nodeState.validationState, child);
-      },
     );
   }
 }
