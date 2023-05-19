@@ -1,4 +1,4 @@
-import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
 import 'package:example/simple_login_page/submit_form_cubit.dart';
 
 class LoginFormController with FormControllerMixin {

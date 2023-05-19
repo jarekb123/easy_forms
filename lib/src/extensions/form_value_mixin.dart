@@ -1,5 +1,5 @@
-import 'package:easy_forms/easy_forms.dart';
-import 'package:easy_forms/src/extensions/form_extension.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:easy_forms_validation/src/extensions/form_extension.dart';
 import 'package:flutter/widgets.dart';
 
 mixin FormValueMixin<Form extends FormControllerMixin, T>

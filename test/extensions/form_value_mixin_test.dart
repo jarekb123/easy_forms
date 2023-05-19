@@ -2,7 +2,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:easy_forms/src/extensions/form_value_mixin.dart';
+import 'package:easy_forms_validation/src/extensions/form_value_mixin.dart';
 
 import '../test_forms/login_form.dart';
 

@@ -1,4 +1,4 @@
-import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
 
 /// Use [RequiredNullableFieldController] if the field's value can be null during filling the form,
 /// but it should be non-null when the form is submitted.

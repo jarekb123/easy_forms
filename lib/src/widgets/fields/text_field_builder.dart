@@ -1,5 +1,5 @@
-import 'package:easy_forms/easy_forms.dart';
-import 'package:easy_forms/src/widgets/form_part_builder.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:easy_forms_validation/src/widgets/form_part_builder.dart';
 import 'package:flutter/widgets.dart';
 
 class TextFieldBuilder<ValidationError> extends StatefulWidget {

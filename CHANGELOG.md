@@ -2,4 +2,4 @@
 
 # 0.1.0
 
-Create `easy_forms` package
+Create `easy_forms_validation` package

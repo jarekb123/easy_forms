@@ -1,4 +1,4 @@
-import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
 
 mixin FormExtension<Form extends FormControllerMixin> {
   /// The form that is being extended.

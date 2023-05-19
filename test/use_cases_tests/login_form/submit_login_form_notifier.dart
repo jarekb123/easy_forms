@@ -1,4 +1,4 @@
-import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../test_forms/login_form.dart';

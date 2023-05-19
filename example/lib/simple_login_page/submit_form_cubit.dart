@@ -1,4 +1,4 @@
-import 'package:easy_forms/easy_forms.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum SubmitStatus { initial, submitting, success, failure }

@@ -1,5 +1,5 @@
-import 'package:easy_forms/easy_forms.dart';
-import 'package:easy_forms/src/fields/bool.dart';
+import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:easy_forms_validation/src/fields/bool.dart';
 
 import '../../test_forms/login_form.dart';
 
