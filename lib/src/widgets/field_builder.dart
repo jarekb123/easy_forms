@@ -1,5 +1,4 @@
 import 'package:easy_forms_validation/easy_forms_validation.dart';
-import 'package:easy_forms_validation/src/widgets/form_part_builder.dart';
 import 'package:flutter/widgets.dart';
 
 class FieldBuilder<Value, ValidationError> extends StatelessWidget {
