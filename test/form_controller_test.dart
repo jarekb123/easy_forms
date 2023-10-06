@@ -51,6 +51,33 @@ void main() {
         reason:
             'validation state should be invalid after validate() on invalid form',
       );
+
+      form.field1.updateValue('');
+      form.field2.updateValue('not-empty');
+      expect(form.validate(), isFalse);
+      expectValidationState(
+        form.field1.value,
+        ValidationState.invalid,
+        reason: 'field1 is empty, so its state should be invalid',
+      );
+      expectValidationState(
+        form.field2.value,
+        ValidationState.valid,
+        reason: 'field2 is not empty, so its state should be valid',
+      );
+
+      form.field2.updateValue('');
+      expect(form.validate(), isFalse);
+      expectValidationState(
+        form.field1.value,
+        ValidationState.invalid,
+        reason: 'field1 is empty, so its state should be invalid',
+      );
+      expectValidationState(
+        form.field2.value,
+        ValidationState.invalid,
+        reason: 'field2 is empty, so its state should be invalid',
+      );
     });
   });
 

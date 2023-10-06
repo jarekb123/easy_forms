@@ -76,7 +76,11 @@ mixin FormControllerMixin implements FormPart<FormControllerState> {
   /// Validates all fields of the form.
   @override
   bool validate() {
-    return fields.every((field) => field.validate());
+    var valid = true;
+    for (final field in fields) {
+      valid = field.validate() && valid;
+    }
+    return valid;
   }
 
   void _maybeListenToFields() {
