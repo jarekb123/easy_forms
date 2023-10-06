@@ -83,6 +83,7 @@ mixin SubmitFormMixin<Form extends FormControllerMixin, Result>
         onSubmitted(result);
       }
     } catch (error, stackTrace) {
+      _submitting = false;
       onSubmitError(error, stackTrace);
     }
   }
