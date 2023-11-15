@@ -4,6 +4,7 @@ import 'package:easy_forms_validation/easy_forms_validation.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
 import '../test_helpers.dart';
 
 void main() {
@@ -154,9 +155,9 @@ class _TestSubmitFormMixin extends ValueNotifier<_SubmitFormState>
 class _TestForm with FormControllerMixin {
   final field = FieldController<String, String>(
     initialValue: '',
-    validator: (value, _) => value.isEmpty ? 'empty' : null,
+    validator: (value) => value.isEmpty ? 'empty' : null,
   );
 
   @override
-  List<FormPart> get fields => [field];
+  List<EasyForm> get fields => [field];
 }

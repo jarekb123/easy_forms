@@ -226,7 +226,7 @@ void main() {
   });
 }
 
-String? _validate(String value, FieldRef ref) {
+String? _validate(String value) {
   if (value.isEmpty) {
     return 'This field is required';
   }
@@ -245,7 +245,7 @@ class _FlatForm with FormControllerMixin {
       _TestFieldController(initialValue: 'not empty');
 
   @override
-  List<FormPart> get fields => [field1, field2];
+  List<EasyForm> get fields => [field1, field2];
 }
 
 class _AutovalidatedForm with FormControllerMixin {
@@ -263,7 +263,7 @@ class _AutovalidatedForm with FormControllerMixin {
   );
 
   @override
-  List<FormPart> get fields => [field1, field2];
+  List<EasyForm> get fields => [field1, field2];
 }
 
 class _NestedForm with FormControllerMixin {
@@ -271,5 +271,5 @@ class _NestedForm with FormControllerMixin {
   final autovalidatedSubform = _AutovalidatedForm();
 
   @override
-  List<FormPart> get fields => [subform, autovalidatedSubform];
+  List<EasyForm> get fields => [subform, autovalidatedSubform];
 }

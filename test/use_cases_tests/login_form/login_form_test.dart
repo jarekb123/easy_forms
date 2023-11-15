@@ -52,6 +52,8 @@ void main() {
       expect(
         loginNotifier.form.email.value,
         const FieldControllerState(
+          autoValidate: false,
+          initialValue: 'email@email.com',
           value: 'email@email.com',
           error: EmailValidationError.alreadyUsed,
           validationState: ValidationState.invalid,

@@ -8,7 +8,7 @@ class SubmitButton extends StatelessWidget {
     required this.onSubmit,
   });
 
-  final FormPart form;
+  final EasyForm form;
   final VoidCallback onSubmit;
 
   @override

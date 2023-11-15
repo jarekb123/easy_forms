@@ -3,7 +3,7 @@ import 'package:example/simple_login_page/submit_form_cubit.dart';
 
 class LoginFormController with FormControllerMixin {
   final username = TextFieldController<String>(
-    validator: (value, _) {
+    validator: (value) {
       if (value.isEmpty) {
         return 'The username cannot be empty';
       }
@@ -13,7 +13,7 @@ class LoginFormController with FormControllerMixin {
   );
 
   final password = TextFieldController<String>(
-    validator: (value, ref) {
+    validator: (value) {
       if (value == 'admin') {
         return 'You cannot use this password';
       }
@@ -23,7 +23,7 @@ class LoginFormController with FormControllerMixin {
   );
 
   @override
-  List<FormPart<FormPartState>> get fields => [username, password];
+  List<EasyForm<FormPartState>> get fields => [username, password];
 }
 
 enum LoginResult {

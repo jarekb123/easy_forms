@@ -48,7 +48,7 @@ class _RequiredNullableField
           nullValueError: _FieldValidationError.empty,
         );
 
-  static _FieldValidationError? _validate(String value, FieldRef ref) {
+  static _FieldValidationError? _validate(String value) {
     if (value.length > 5) {
       return _FieldValidationError.tooLong;
     } else {

@@ -10,6 +10,8 @@ typedef _TestFieldState = FieldControllerState<String, _FieldValidationError>;
 void main() {
   registerFallbackValue(
     const _TestFieldState(
+      autoValidate: false,
+      initialValue: '',
       value: '',
       error: null,
       validationState: ValidationState.dirty,
@@ -24,7 +26,7 @@ void main() {
   }) {
     return FieldController(
       initialValue: initialValue,
-      validator: (value, ref) {
+      validator: (value) {
         if (value.isEmpty) {
           return _FieldValidationError.empty;
         } else if (value.length > 5) {
@@ -55,6 +57,8 @@ void main() {
       expect(
         field.value,
         const _TestFieldState(
+          autoValidate: false,
+          initialValue: '',
           value: '',
           error: null,
           validationState: ValidationState.dirty,
@@ -67,6 +71,8 @@ void main() {
       field.updateValue('123456');
 
       const expectedState = _TestFieldState(
+        autoValidate: false,
+        initialValue: '',
         value: '123456',
         error: null,
         validationState: ValidationState.dirty,
@@ -80,6 +86,8 @@ void main() {
       // validates initial value
       expect(field.validate(), isFalse);
       const expectedFirstState = _TestFieldState(
+        autoValidate: false,
+        initialValue: '',
         value: '',
         error: _FieldValidationError.empty,
         validationState: ValidationState.invalid,
@@ -89,6 +97,8 @@ void main() {
 
       field.updateValue('123456');
       const expectedSecondState = _TestFieldState(
+        autoValidate: false,
+        initialValue: '',
         value: '123456',
         error: null, // error is cleared when value is updated
         validationState: ValidationState.dirty,
@@ -102,6 +112,8 @@ void main() {
 
       expect(field.validate(), isFalse);
       const expectedThirdState = _TestFieldState(
+        autoValidate: false,
+        initialValue: '',
         value: '123456',
         error: _FieldValidationError.tooLong,
         validationState: ValidationState.invalid,
@@ -166,6 +178,8 @@ void main() {
       verify(
         () => stateListener(
           const _TestFieldState(
+            autoValidate: false,
+            initialValue: '',
             value: '123456',
             error: _FieldValidationError.tooLong,
             validationState: ValidationState.invalid,
@@ -178,6 +192,8 @@ void main() {
       verify(
         () => stateListener(
           const _TestFieldState(
+            autoValidate: false,
+            initialValue: '',
             value: '12345',
             error: null,
             validationState: ValidationState.valid,
@@ -190,6 +206,8 @@ void main() {
       verify(
         () => stateListener(
           const _TestFieldState(
+            autoValidate: false,
+            initialValue: '',
             value: '',
             error: _FieldValidationError.empty,
             validationState: ValidationState.invalid,
@@ -235,7 +253,7 @@ void main() {
         () {
           passwordController = FieldController<String, String>(
             initialValue: '',
-            validator: (value, ref) {
+            validator: (value) {
               if (value.isEmpty) {
                 return 'Password is required';
               } else if (value.length < 6) {
@@ -249,8 +267,8 @@ void main() {
           confirmPasswordController = FieldController<String, String>(
             initialValue: '',
             autoValidate: true,
-            validator: (value, ref) {
-              final password = ref.watch(passwordController).value;
+            validator: (value) {
+              final password = passwordController.value.value;
 
               if (value.isEmpty) {
                 return 'Confirm password is required';
@@ -294,16 +312,6 @@ void main() {
           ),
         );
       });
-
-      test(
-        'dispose controller removes listener on dependent field',
-        () {
-          confirmPasswordController.addListener(() {});
-          expect(passwordController.hasListeners, isTrue);
-          confirmPasswordController.dispose();
-          expect(passwordController.hasListeners, isFalse);
-        },
-      );
     },
   );
 }

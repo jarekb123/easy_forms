@@ -1,18 +1,16 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:flutter/foundation.dart';
 
 typedef FieldValidator<Value, ValidationError> = ValidationError? Function(
   Value value,
-  FieldRef ref,
 );
 
 /// [FieldController] is a controller for a field in a form.
 class FieldController<Value, ValidationError>
-    implements FormPart<FieldControllerState<Value, ValidationError>> {
+    implements EasyForm<FieldControllerState<Value, ValidationError>> {
   /// Creates a [FieldController].
   ///
   /// If [autoValidate] is set to true, the field will be validated on every its value change, so:
@@ -23,14 +21,27 @@ class FieldController<Value, ValidationError>
     required Value initialValue,
     FieldValidator<Value, ValidationError>? validator,
     this.debugLabel,
-    this.autoValidate = false,
-  })  : _initialValue = initialValue,
-        _validator = validator ?? _defaultValidator;
+    bool autoValidate = false,
+  })  : _validator = validator ?? _defaultValidator,
+        _value = ValueNotifier(
+          FieldControllerState<Value, ValidationError>(
+            initialValue: initialValue,
+            value: initialValue,
+            error: autoValidate
+                ? (validator ?? _defaultValidator).call(initialValue)
+                : null,
+            validationState: autoValidate
+                ? (validator ?? _defaultValidator).call(initialValue) == null
+                    ? ValidationState.valid
+                    : ValidationState.invalid
+                : ValidationState.dirty,
+            autoValidate: autoValidate,
+          ),
+        );
 
   // Creates a validator that always returns null (field's value is always valid)
   static ValidationError? _defaultValidator<Value, ValidationError>(
     Value value,
-    FieldRef ref,
   ) =>
       null;
 
@@ -38,24 +49,10 @@ class FieldController<Value, ValidationError>
   @override
   FieldControllerState<Value, ValidationError> get value => _value.value;
 
-  late final ValueNotifier<FieldControllerState<Value, ValidationError>>
-      _value = ValueNotifier(
-    FieldControllerState<Value, ValidationError>(
-      value: _initialValue,
-      error: autoValidate ? _validator(_initialValue, _ref) : null,
-      validationState: autoValidate
-          ? _validator(_initialValue, _ref) == null
-              ? ValidationState.valid
-              : ValidationState.invalid
-          : ValidationState.dirty,
-    ),
-  );
+  late final ValueNotifier<FieldControllerState<Value, ValidationError>> _value;
 
   /// The value of the field.
   Value get fieldValue => value.value;
-
-  /// Whether the field is validated on every change of its value.
-  final bool autoValidate;
 
   // ignore: invalid_use_of_protected_member
   bool get hasListeners => _value.hasListeners;
@@ -65,9 +62,6 @@ class FieldController<Value, ValidationError>
   ///
   /// It should return null if the field is valid.
   final FieldValidator<Value, ValidationError> _validator;
-
-  final Value _initialValue;
-  late final _ref = FieldRef(this, autoValidate);
 
   /// The debug label of the field.
   /// It is used in [toString]/[toMap] to identify the field.
@@ -84,7 +78,6 @@ class FieldController<Value, ValidationError>
   }
 
   void dispose() {
-    _ref.dispose();
     _value.dispose();
   }
 
@@ -92,9 +85,11 @@ class FieldController<Value, ValidationError>
   ///
   /// If [autoValidate] is true, the field will be validated immediately.
   void updateValue(Value value) {
-    if (autoValidate) {
-      final error = _validator(value, _ref);
+    if (_value.value.autoValidate) {
+      final error = _validator(value);
       _value.value = FieldControllerState(
+        initialValue: _value.value.initialValue,
+        autoValidate: _value.value.autoValidate,
         value: value,
         error: error,
         validationState:
@@ -102,6 +97,8 @@ class FieldController<Value, ValidationError>
       );
     } else {
       _value.value = FieldControllerState(
+        initialValue: _value.value.initialValue,
+        autoValidate: _value.value.autoValidate,
         value: value,
         error: null,
         validationState: ValidationState.dirty,
@@ -114,8 +111,10 @@ class FieldController<Value, ValidationError>
   /// Returns true if the field is valid, false otherwise.
   @override
   bool validate() {
-    final error = _validator(value.value, _ref);
+    final error = _validator(value.value);
     _value.value = FieldControllerState(
+      initialValue: _value.value.initialValue,
+      autoValidate: _value.value.autoValidate,
       value: value.value,
       error: error,
       validationState:
@@ -130,6 +129,8 @@ class FieldController<Value, ValidationError>
   /// eg. some validation is performed on the server.
   void overrideValidationError(ValidationError error) {
     _value.value = FieldControllerState(
+      initialValue: _value.value.initialValue,
+      autoValidate: _value.value.autoValidate,
       value: value.value,
       error: error,
       validationState: ValidationState.invalid,
@@ -163,10 +164,15 @@ class FieldController<Value, ValidationError>
 class FieldControllerState<Value, ValidationError> implements FormPartState {
   /// {@macro field_controller_state}
   const FieldControllerState({
+    required this.initialValue,
     required this.value,
     required this.error,
+    required this.autoValidate,
     required this.validationState,
   });
+
+  /// The initial value of the field.
+  final Value initialValue;
 
   /// The current value of the field.
   final Value value;
@@ -174,7 +180,10 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
   /// The current validation error of the field.
   final ValidationError? error;
 
-  /// The current validation state of the node.
+  // The current state of the validation behavior
+  final bool autoValidate;
+
+  /// Whether the field is validated on every change of its value.
   @override
   final ValidationState validationState;
 
@@ -195,46 +204,5 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
   @override
   String toString() {
     return 'FieldControllerState(value: $value, error: $error, validationState: $validationState)';
-  }
-}
-
-/// It is used to watch the state of another field.
-/// It is useful to create fields validators that depend on other fields.
-class FieldRef {
-  final FieldController _parent;
-  final bool _autoValidate;
-
-  final _dependencies = <FieldController>[];
-
-  FieldRef(
-    this._parent,
-    this._autoValidate,
-  );
-
-  FieldControllerState<T, ValidationError> watch<T, ValidationError>(
-    FieldController<T, ValidationError> field,
-  ) {
-    if (_autoValidate) {
-      _listenToDependency(field);
-    }
-
-    return field.value;
-  }
-
-  void dispose() {
-    for (final field in _dependencies) {
-      field.removeListener(_validate);
-    }
-  }
-
-  void _listenToDependency(FieldController field) {
-    if (!_dependencies.contains(field)) {
-      _dependencies.add(field);
-      field.addListener(_validate);
-    }
-  }
-
-  void _validate() {
-    _parent.validate();
   }
 }

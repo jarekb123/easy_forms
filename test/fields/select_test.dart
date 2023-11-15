@@ -17,7 +17,7 @@ void main() {
         () {
           field = SelectFieldController<String, _SelectValidationError>(
             initialValue: 'a',
-            validator: (value, _) {
+            validator: (value) {
               if (value == 'c') {
                 return _SelectValidationError.notSupported;
               }
@@ -82,7 +82,7 @@ void main() {
         () {
           field = MultiselectFieldController(
             initialValue: ['a'],
-            validator: (value, _) {
+            validator: (value) {
               if (value.length > 2) {
                 return _MultiSelectValidationError.tooManyOptionsSelected;
               }

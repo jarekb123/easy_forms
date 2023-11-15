@@ -7,7 +7,7 @@ enum PasswordValidationError { tooShort }
 class LoginForm with FormControllerMixin {
   final email = TextFieldController(
     initialValue: '',
-    validator: (value, _) {
+    validator: (value) {
       if (value.isEmpty || !value.contains('@')) {
         return EmailValidationError.invalidFormat;
       }
@@ -16,7 +16,7 @@ class LoginForm with FormControllerMixin {
   );
   final password = TextFieldController(
     initialValue: '',
-    validator: (value, _) {
+    validator: (value) {
       if (value.length < 6) {
         return PasswordValidationError.tooShort;
       }
@@ -25,5 +25,5 @@ class LoginForm with FormControllerMixin {
   );
 
   @override
-  List<FormPart<FormPartState>> get fields => [email, password];
+  List<EasyForm<FormPartState>> get fields => [email, password];
 }
