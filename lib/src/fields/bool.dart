@@ -5,5 +5,7 @@ class BoolFieldController<ValidationError>
   BoolFieldController({
     super.initialValue = false,
     super.validator,
+    super.debugLabel,
+    super.autoValidate,
   });
 }
