@@ -6,5 +6,6 @@ class TextFieldController<ValidationError>
     super.initialValue = '',
     super.validator,
     super.debugLabel,
+    super.autoValidate,
   });
 }

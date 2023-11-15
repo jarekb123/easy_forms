@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.2.1
+
+- Add missing autovalidate in constructors of `BoolFieldController` and `TextFieldController`
+
 # 0.2.0
 
 - Export `BoolFieldController`
