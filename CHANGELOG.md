@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.3.0
+
+- Move autovalidate and initialValue into `FieldControllerState`
+- Add `setAutovalidate` and `clearError` to the `FieldController`
+
 # 0.2.1
 
 - Add missing autovalidate in constructors of `BoolFieldController` and `TextFieldController`
