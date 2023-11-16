@@ -1,9 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:flutter/foundation.dart';
 
 typedef FieldValidator<Value, ValidationError> = ValidationError? Function(
   Value value,
@@ -23,9 +22,26 @@ class FieldController<Value, ValidationError>
     required Value initialValue,
     FieldValidator<Value, ValidationError>? validator,
     this.debugLabel,
-    this.autoValidate = false,
-  })  : _initialValue = initialValue,
-        _validator = validator ?? _defaultValidator;
+    bool autoValidate = false,
+  }) : _validator = validator ?? _defaultValidator {
+    _ref = FieldRef(this);
+
+    _value = ValueNotifier(
+      FieldControllerState<Value, ValidationError>(
+        initialValue: initialValue,
+        value: initialValue,
+        autoValidate: autoValidate,
+        error: autoValidate
+            ? (validator ?? _defaultValidator).call(initialValue, _ref)
+            : null,
+        validationState: autoValidate
+            ? (validator ?? _defaultValidator).call(initialValue, _ref) == null
+                ? ValidationState.valid
+                : ValidationState.invalid
+            : ValidationState.dirty,
+      ),
+    );
+  }
 
   // Creates a validator that always returns null (field's value is always valid)
   static ValidationError? _defaultValidator<Value, ValidationError>(
@@ -38,24 +54,10 @@ class FieldController<Value, ValidationError>
   @override
   FieldControllerState<Value, ValidationError> get value => _value.value;
 
-  late final ValueNotifier<FieldControllerState<Value, ValidationError>>
-      _value = ValueNotifier(
-    FieldControllerState<Value, ValidationError>(
-      value: _initialValue,
-      error: autoValidate ? _validator(_initialValue, _ref) : null,
-      validationState: autoValidate
-          ? _validator(_initialValue, _ref) == null
-              ? ValidationState.valid
-              : ValidationState.invalid
-          : ValidationState.dirty,
-    ),
-  );
+  late final ValueNotifier<FieldControllerState<Value, ValidationError>> _value;
 
   /// The value of the field.
   Value get fieldValue => value.value;
-
-  /// Whether the field is validated on every change of its value.
-  final bool autoValidate;
 
   // ignore: invalid_use_of_protected_member
   bool get hasListeners => _value.hasListeners;
@@ -66,8 +68,7 @@ class FieldController<Value, ValidationError>
   /// It should return null if the field is valid.
   final FieldValidator<Value, ValidationError> _validator;
 
-  final Value _initialValue;
-  late final _ref = FieldRef(this, autoValidate);
+  late final FieldRef _ref;
 
   /// The debug label of the field.
   /// It is used in [toString]/[toMap] to identify the field.
@@ -92,34 +93,43 @@ class FieldController<Value, ValidationError>
   ///
   /// If [autoValidate] is true, the field will be validated immediately.
   void updateValue(Value value) {
+    final autoValidate = _value.value.autoValidate;
+
     if (autoValidate) {
       final error = _validator(value, _ref);
       _value.value = FieldControllerState(
+        initialValue: _value.value.initialValue,
         value: value,
         error: error,
         validationState:
             error == null ? ValidationState.valid : ValidationState.invalid,
+        autoValidate: autoValidate,
       );
     } else {
       _value.value = FieldControllerState(
+        initialValue: _value.value.initialValue,
         value: value,
         error: null,
         validationState: ValidationState.dirty,
+        autoValidate: autoValidate,
       );
     }
   }
 
-  /// Validates the field.
+  /// Validates the node.
   ///
-  /// Returns true if the field is valid, false otherwise.
+  /// Returns true if the node is valid, false otherwise.
+  /// Sets [autoValidate] if given
   @override
-  bool validate() {
+  bool validate({bool? autoValidate}) {
     final error = _validator(value.value, _ref);
     _value.value = FieldControllerState(
+      initialValue: _value.value.initialValue,
       value: value.value,
       error: error,
       validationState:
           error == null ? ValidationState.valid : ValidationState.invalid,
+      autoValidate: autoValidate ?? _value.value.autoValidate,
     );
     return error == null;
   }
@@ -130,9 +140,41 @@ class FieldController<Value, ValidationError>
   /// eg. some validation is performed on the server.
   void overrideValidationError(ValidationError error) {
     _value.value = FieldControllerState(
+      initialValue: _value.value.initialValue,
       value: value.value,
       error: error,
       validationState: ValidationState.invalid,
+      autoValidate: _value.value.autoValidate,
+    );
+  }
+
+  /// Sets autoValidate in the [_value].
+  ///
+  /// If autoValidate is true and [_value.validationState] is [ValidationState.dirty], validate is called.
+  /// Otherwise only autoValidate field is updated.
+
+  void setAutovalidate(bool autoValidate) {
+    if (autoValidate && value.validationState == ValidationState.dirty) {
+      validate(autoValidate: autoValidate);
+    } else {
+      _value.value = FieldControllerState(
+        autoValidate: autoValidate,
+        error: value.error,
+        initialValue: value.initialValue,
+        validationState: value.validationState,
+        value: value.value,
+      );
+    }
+  }
+
+  /// Sets error as null
+  void clearError() {
+    _value.value = FieldControllerState(
+      autoValidate: value.autoValidate,
+      error: null,
+      initialValue: value.initialValue,
+      validationState: value.validationState,
+      value: value.value,
     );
   }
 
@@ -163,10 +205,15 @@ class FieldController<Value, ValidationError>
 class FieldControllerState<Value, ValidationError> implements FormPartState {
   /// {@macro field_controller_state}
   const FieldControllerState({
+    required this.initialValue,
     required this.value,
     required this.error,
     required this.validationState,
+    required this.autoValidate,
   });
+
+  /// The initial value of the field.
+  final Value initialValue;
 
   /// The current value of the field.
   final Value value;
@@ -178,6 +225,9 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
   @override
   final ValidationState validationState;
 
+  /// The current auto validation state.
+  final bool autoValidate;
+
   @override
   bool operator ==(
     covariant FieldControllerState<Value, ValidationError> other,
@@ -186,15 +236,18 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
 
     return other.value == value &&
         other.error == error &&
-        other.validationState == validationState;
+        other.validationState == validationState &&
+        other.autoValidate == autoValidate &&
+        initialValue == initialValue;
   }
 
   @override
-  int get hashCode => Object.hash(value, error, validationState);
+  int get hashCode =>
+      Object.hash(value, error, validationState, autoValidate, initialValue);
 
   @override
   String toString() {
-    return 'FieldControllerState(value: $value, error: $error, validationState: $validationState)';
+    return 'FieldControllerState(value: $value, error: $error, validationState: $validationState, autoValidate: $autoValidate, initialValue: $initialValue)';
   }
 }
 
@@ -202,21 +255,17 @@ class FieldControllerState<Value, ValidationError> implements FormPartState {
 /// It is useful to create fields validators that depend on other fields.
 class FieldRef {
   final FieldController _parent;
-  final bool _autoValidate;
 
   final _dependencies = <FieldController>[];
 
   FieldRef(
     this._parent,
-    this._autoValidate,
   );
 
   FieldControllerState<T, ValidationError> watch<T, ValidationError>(
     FieldController<T, ValidationError> field,
   ) {
-    if (_autoValidate) {
-      _listenToDependency(field);
-    }
+    _listenToDependency(field);
 
     return field.value;
   }
@@ -235,6 +284,8 @@ class FieldRef {
   }
 
   void _validate() {
-    _parent.validate();
+    if (_parent.value.autoValidate) {
+      _parent.validate();
+    }
   }
 }

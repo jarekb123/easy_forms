@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../test_forms/login_form.dart';
-import 'submit_login_form_notifier.dart';
 import 'login_form_test_helpers.dart';
+import 'submit_login_form_notifier.dart';
 
 void main() {
   registerFallbackValue(LoginRequest('', ''));
@@ -52,9 +52,11 @@ void main() {
       expect(
         loginNotifier.form.email.value,
         const FieldControllerState(
+          initialValue: '',
           value: 'email@email.com',
           error: EmailValidationError.alreadyUsed,
           validationState: ValidationState.invalid,
+          autoValidate: false,
         ),
       );
       expect(

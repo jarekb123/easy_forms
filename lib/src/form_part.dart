@@ -8,7 +8,8 @@ abstract class FormPart<T extends FormPartState> implements ValueListenable<T> {
   /// Validates the node.
   ///
   /// Returns true if the node is valid, false otherwise.
-  bool validate();
+  /// Sets [autoValidate] if given
+  bool validate({bool? autoValidate});
 
   /// Used to dump the state of the node.
   Map<String, dynamic> toMap();

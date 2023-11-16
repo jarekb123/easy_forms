@@ -1,9 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
-
 import 'package:easy_forms_validation/easy_forms_validation.dart';
+import 'package:flutter/foundation.dart';
 
 /// [FormControllerMixin] is a mixin for any class that needs form validation logic.
 ///
@@ -75,10 +74,10 @@ mixin FormControllerMixin implements FormPart<FormControllerState> {
 
   /// Validates all fields of the form.
   @override
-  bool validate() {
+  bool validate({bool? autoValidate}) {
     var valid = true;
     for (final field in fields) {
-      valid = field.validate() && valid;
+      valid = field.validate(autoValidate: autoValidate) && valid;
     }
     return valid;
   }
