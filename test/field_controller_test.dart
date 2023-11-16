@@ -1,6 +1,7 @@
 import 'package:easy_forms_validation/easy_forms_validation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+
 import 'test_helpers.dart';
 
 enum _FieldValidationError { empty, tooLong }
@@ -10,9 +11,11 @@ typedef _TestFieldState = FieldControllerState<String, _FieldValidationError>;
 void main() {
   registerFallbackValue(
     const _TestFieldState(
+      initialValue: '',
       value: '',
       error: null,
       validationState: ValidationState.dirty,
+      autoValidate: false,
     ),
   );
   late MockListener<FieldControllerState<String, _FieldValidationError>>
@@ -55,9 +58,11 @@ void main() {
       expect(
         field.value,
         const _TestFieldState(
+          initialValue: '',
           value: '',
           error: null,
           validationState: ValidationState.dirty,
+          autoValidate: false,
         ),
       );
       verifyZeroInteractions(stateListener);
@@ -67,9 +72,11 @@ void main() {
       field.updateValue('123456');
 
       const expectedState = _TestFieldState(
+        initialValue: '',
         value: '123456',
         error: null,
         validationState: ValidationState.dirty,
+        autoValidate: false,
       );
       expect(field.value, expectedState);
       verify(() => stateListener(expectedState)).called(1);
@@ -80,18 +87,22 @@ void main() {
       // validates initial value
       expect(field.validate(), isFalse);
       const expectedFirstState = _TestFieldState(
+        initialValue: '',
         value: '',
         error: _FieldValidationError.empty,
         validationState: ValidationState.invalid,
+        autoValidate: false,
       );
       expect(field.value, expectedFirstState);
       verify(() => stateListener(expectedFirstState)).called(1);
 
       field.updateValue('123456');
       const expectedSecondState = _TestFieldState(
+        initialValue: '',
         value: '123456',
         error: null, // error is cleared when value is updated
         validationState: ValidationState.dirty,
+        autoValidate: false,
       );
       expect(
         field.value,
@@ -102,9 +113,11 @@ void main() {
 
       expect(field.validate(), isFalse);
       const expectedThirdState = _TestFieldState(
+        initialValue: '',
         value: '123456',
         error: _FieldValidationError.tooLong,
         validationState: ValidationState.invalid,
+        autoValidate: false,
       );
       expect(field.value, expectedThirdState);
       verify(() => stateListener(expectedThirdState)).called(1);
@@ -165,10 +178,12 @@ void main() {
       field.updateValue('123456');
       verify(
         () => stateListener(
-          const _TestFieldState(
+          _TestFieldState(
+            initialValue: field.value.initialValue,
             value: '123456',
             error: _FieldValidationError.tooLong,
             validationState: ValidationState.invalid,
+            autoValidate: field.value.autoValidate,
           ),
         ),
       ).called(1);
@@ -177,10 +192,12 @@ void main() {
       field.updateValue('12345');
       verify(
         () => stateListener(
-          const _TestFieldState(
+          _TestFieldState(
+            initialValue: field.value.initialValue,
             value: '12345',
             error: null,
             validationState: ValidationState.valid,
+            autoValidate: field.value.autoValidate,
           ),
         ),
       ).called(1);
@@ -189,10 +206,12 @@ void main() {
       field.updateValue('');
       verify(
         () => stateListener(
-          const _TestFieldState(
+          _TestFieldState(
+            initialValue: field.value.initialValue,
             value: '',
             error: _FieldValidationError.empty,
             validationState: ValidationState.invalid,
+            autoValidate: field.value.autoValidate,
           ),
         ),
       ).called(1);
@@ -306,4 +325,111 @@ void main() {
       );
     },
   );
+
+  group('setAutovalidate with autoValidate == true', () {
+    late FieldController<String, _FieldValidationError> field;
+
+    setUp(() {
+      field = createField(initialValue: '', autoValidate: false);
+      field.addListener(
+        () => stateListener(field.value),
+      );
+    });
+
+    test(
+      'and valid/invalid state only set autoValidate',
+      () {
+        field.setAutovalidate(true);
+        expect(
+          field.value,
+          FieldControllerState<String, _FieldValidationError>(
+            initialValue: field.value.initialValue,
+            autoValidate: true,
+            error: field.value.error,
+            validationState: field.value.validationState,
+            value: field.value.value,
+          ),
+        );
+      },
+    );
+    test(
+      'and dirty state calling validate once',
+      () {
+        field.updateValue('123');
+        field.setAutovalidate(true);
+        verify(() => stateListener.call(any(
+              that: allOf(
+                hasValidationError(null),
+                hasValidationState(ValidationState.valid),
+              ),
+            ))).called(1);
+      },
+    );
+  });
+  group('setAutovalidate with autoValidate == false', () {
+    late FieldController<String, _FieldValidationError> field;
+
+    setUp(() {
+      field = createField(initialValue: '', autoValidate: true);
+      field.addListener(
+        () => stateListener(field.value),
+      );
+    });
+
+    test(
+      'in any case only set autoValidate',
+      () {
+        field.setAutovalidate(false);
+        expect(
+          field.value,
+          FieldControllerState<String, _FieldValidationError>(
+            initialValue: field.value.initialValue,
+            autoValidate: false,
+            error: field.value.error,
+            validationState: field.value.validationState,
+            value: field.value.value,
+          ),
+        );
+        field.updateValue('123123');
+        expect(
+          field.value,
+          FieldControllerState<String, _FieldValidationError>(
+            initialValue: field.value.initialValue,
+            autoValidate: false,
+            error: field.value.error,
+            validationState: field.value.validationState,
+            value: field.value.value,
+          ),
+        );
+      },
+    );
+  });
+  group('clear error', () {
+    late FieldController<String, _FieldValidationError> field;
+
+    setUp(() {
+      field = createField(initialValue: '', autoValidate: true);
+      field.addListener(
+        () => stateListener(field.value),
+      );
+    });
+
+    test(
+      'sets error as null',
+      () {
+        field.updateValue('123123');
+        field.clearError();
+        expect(
+          field.value,
+          FieldControllerState<String, _FieldValidationError>(
+            initialValue: field.value.initialValue,
+            autoValidate: field.value.autoValidate,
+            error: null,
+            validationState: field.value.validationState,
+            value: field.value.value,
+          ),
+        );
+      },
+    );
+  });
 }
